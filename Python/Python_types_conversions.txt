@@ -1,0 +1,58 @@
+
+
+Python types conversion clarification
+-------------------------------------
+
+by Marco Vedovati
+
+
+ord(): string (as byte) to int. Takes as input a single-char string and
+returns the ascii code as integer.
+
+chr(): takes input an ascii code as integer and 
+returns the associated character in '\x##'  format.
+
+
+str(): integer/string/whatever to printable string conversion.
+
+int(): takes as input a single  character in the format '\x##'
+and returns its ascii code value as integer.
+
+
+hex(): takes as input an integer number of whatever size and returns
+as output a string in the format "0x####"
+
+********
+binascii module
+
+
+hexlify(): takes as input a string and returns a string. For each
+character of the input string it returns two characters representing
+the ascii code of the char in hexadecimal format.
+
+Equivalent to:
+a = '%02X' %ord('A')
+
+unhexlify(): takes as input a string and returns a string.
+Characters in the input string must be even and between "0-9" and "A-F".
+Each two character of the input string as considered as an hex value,
+as output is returned the ASCII representation of it.
+
+
+
+FAQ:
+
+Q: how can i convert "00" to 0x00 ?
+A: use binascii.unhexlify("00")
+
+Q: how can i convert "00" or "0" to 0x00 automatically?
+   what if is prepended by "0x" ? 
+A: 
+
+a = "0" #or "00"
+if len(a)<=2 :
+	binascii.unhexlify("0"+a)
+
+#if prepended by 0x
+a = a[2:]
+#like before
