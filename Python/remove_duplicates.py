@@ -1,10 +1,26 @@
 #!/usr/bin/python
-
+#
+# Remove duplicate networks from wpa_supplicant.conf
+# Marco Vedovati, 2015
+#
 import re
 import sys
 
-if len(sys.argv) < 3:
-    sys.exit("Please specify wpa_supplicant.conf input and output file paths!")
+def usage():
+    base_name = sys.argv[0].split("/")[-1]
+    sys.exit("Usage:\n" +
+             base_name + " [-a] <input file> <output file>\n"
+             "\n"
+             "Options:\n"
+             "  -a: don't prompt for duplicate choice, always select first occurence\n")
+
+if len(sys.argv) == 3:
+    auto_mode = False
+elif len(sys.argv) == 4 and sys.argv[1] == "-a":
+    auto_mode = True
+    sys.argv.pop(1)
+else:
+    usage()
 
 wpa_cfg_file_name = sys.argv[1]
 wpa_out_cfg_file_name = sys.argv[2]
@@ -26,7 +42,6 @@ nwk_matches = nwk_regex.findall(f_content)
 
 networks_dictionary = {}
 
-
 for network_block in nwk_matches:
     try:
         ssid = ssid_regex.findall(network_block).pop()
@@ -36,18 +51,21 @@ for network_block in nwk_matches:
         continue
 
 
-    if not networks_dictionary.has_key(ssid):
+    if (not networks_dictionary.has_key(ssid)):
         net_to_add = network_block
     else:
         print "Found duplicate for ssid: " + ssid
-        print "Choose net to add: "
-        print "1 : "
-        print networks_dictionary[ssid]
-        print "2 : "
-        print network_block
-        print ""
-        print "Type your choice: ",
-        choice=raw_input()
+        if auto_mode:
+            choice = "1"
+        else:
+            print "Choose net to add: "
+            print "1 : ",
+            print networks_dictionary[ssid]
+            print "2 : ",
+            print network_block
+            print ""
+            print "Type your choice: ",
+            choice=raw_input()
 
         if int(choice) == 1:
             print "Adding net 1"
@@ -57,11 +75,8 @@ for network_block in nwk_matches:
             net_to_add = network_block
 
     networks_dictionary[ssid] = net_to_add
-    print ssid
     print net_to_add
-    print "##################"
-
-#################################
+    print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 try:
     outfile = open(wpa_out_cfg_file_name, "w")
@@ -73,3 +88,5 @@ outfile.write(hdr)
 for ssid in networks_dictionary:
     outfile.write(networks_dictionary[ssid])
     outfile.write("\n\n")
+
+print "That's all. Remember after pushing file to 'chown system.wifi /data/misc/wifi/wpa_supplicant.conf' and change permissions back to 660"
