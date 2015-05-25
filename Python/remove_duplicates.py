@@ -89,4 +89,4 @@ for ssid in networks_dictionary:
     outfile.write(networks_dictionary[ssid])
     outfile.write("\n\n")
 
-print "That's all. Remember after pushing file to 'chown system.wifi /data/misc/wifi/wpa_supplicant.conf' and change permissions back to 660"
+print "That's all. Remember after pushing file to 'chown system.wifi /data/misc/wifi/wpa_supplicant.conf' and change permissions back to 660."
