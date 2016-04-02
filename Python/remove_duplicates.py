@@ -1,8 +1,21 @@
 #!/usr/bin/python
 #
-# Remove duplicate networks from wpa_supplicant.conf
+# Remove duplicate networks from wpa_supplicant.conf for Android phones
 # Marco Vedovati, 2015
 #
+'''
+How to use:
+
+adb shell su -c 'cp /data/misc/wifi/wpa_supplicant.conf /mnt/sdcard/wpa_supplicant.conf'
+adb shell su -c 'cp /data/misc/wifi/wpa_supplicant.conf /mnt/sdcard/wpa_supplicant.conf'
+
+python remove_duplicates.py wpa_supplicant.conf wpa_new.conf
+
+adb push wpa_new.conf /mnt/sdcard/wpa_supplicant.conf
+adb shell su -c 'cp /mnt/sdcard/wpa_supplicant.conf /data/misc/wifi/wpa_supplicant.conf'
+adb shell su -c reboot
+'''
+
 import re
 import sys
 
