@@ -1,7 +1,7 @@
 #include <linux/fs.h>       //Files operations.
 #include <linux/device.h>   //For allocating device numbers.
-#include <linux/major.h>    //Device major numbers definitions. 
-#include <linux/module.h>   
+#include <linux/major.h>    //Device major numbers definitions.
+#include <linux/module.h>
 #include <linux/init.h>
 #include <linux/cdev.h>
 
@@ -9,7 +9,7 @@
 //Local variables definitions.
 
 
-#define MODULE_NAME "gpiochar_dev"
+#define MODULE_NAME "template_chardev"
 
 MODULE_AUTHOR("marco v");
 MODULE_LICENSE("GPL");
@@ -20,7 +20,7 @@ struct privdata_s {
 };
 
 // This structure is defined for pure convenience.
-struct gpiochar_s {
+struct tchardev_s {
   struct cdev cdev;
   struct privdata_s priv;
   unsigned int count;
@@ -28,63 +28,63 @@ struct gpiochar_s {
   uint32_t minor;
   char * name;
 };
-  
-struct gpiochar_s gpiochar = {
+
+struct tchardev_s tchardev = {
 	.count = 1,
 	.minor = 0,
 	.name = MODULE_NAME,
 };
 
-int gpiochar_open(struct inode *inode, struct file *filp);
-int gpiochar_release(struct inode *inode, struct file *filp);
-ssize_t gpiochar_read(struct file *filp, char __user *buf, size_t count,
+int tchardev_open(struct inode *inode, struct file *filp);
+int tchardev_release(struct inode *inode, struct file *filp);
+ssize_t tchardev_read(struct file *filp, char __user *buf, size_t count,
                 loff_t *f_pos);
-ssize_t gpiochar_write(struct file *filp, const char __user *buf, size_t count,
+ssize_t tchardev_write(struct file *filp, const char __user *buf, size_t count,
                 loff_t *f_pos);
 
 
 // File operations structure
-struct file_operations gpiochar_fops = {
+struct file_operations tchardev_fops = {
 	.owner = THIS_MODULE,
-	.read   = gpiochar_read,
-	.write  = gpiochar_write,
-	//.ioctl  = gpiochar_ioctl,
-	.open   = gpiochar_open,
-	.release = gpiochar_release,
+	.read   = tchardev_read,
+	.write  = tchardev_write,
+	//.ioctl  = tchardev_ioctl,
+	.open   = tchardev_open,
+	.release = tchardev_release,
 };
 
 
 
 
 /***************************************************************************//**
- * @brief  
+ * @brief
  *
  * */
-int gpiochar_open(struct inode *inode, struct file *filp)
+int tchardev_open(struct inode *inode, struct file *filp)
 {
-	filp->private_data = &(gpiochar.priv);
+	filp->private_data = &(tchardev.priv);
 	printk (KERN_WARNING "Requested %s", __func__);
 	return 0;
 }
 
 
 /***************************************************************************//**
- * @brief  
+ * @brief
  *
  * */
 
-int gpiochar_release(struct inode *inode, struct file *filp)
+int tchardev_release(struct inode *inode, struct file *filp)
 {
 		return 0;
 }
 
 
 /***************************************************************************//**
- * @brief  
+ * @brief
  *
  * */
 
-ssize_t gpiochar_read(struct file *filp, char __user *buf, size_t count,
+ssize_t tchardev_read(struct file *filp, char __user *buf, size_t count,
                 loff_t *f_pos)
 {
 int retcnt = 0;
@@ -105,11 +105,11 @@ struct privdata_s * priv = filp->private_data;
 
 
 /***************************************************************************//**
- * @brief  
+ * @brief
  *
  * */
 
-ssize_t gpiochar_write(struct file *filp, const char __user *buf, size_t count,
+ssize_t tchardev_write(struct file *filp, const char __user *buf, size_t count,
                 loff_t *f_pos)
 {
 struct privdata_s * priv = filp->private_data;
@@ -129,15 +129,15 @@ struct privdata_s * priv = filp->private_data;
  * */
 static int cdev_setup(struct cdev * cdev)
 {
-int err, devno = MKDEV(gpiochar.major, gpiochar.minor);
+int err, devno = MKDEV(tchardev.major, tchardev.minor);
 
-	cdev_init(cdev, &gpiochar_fops);
+	cdev_init(cdev, &tchardev_fops);
 	cdev->owner = THIS_MODULE;
-	cdev->ops = &gpiochar_fops;
+	cdev->ops = &tchardev_fops;
 	err = cdev_add(cdev, devno, 1);
 	if(err)
-		printk(KERN_NOTICE "Error %d adding gpiochar_dev%d", err, 0);
-	
+		printk(KERN_NOTICE "Error %d adding %s - err=%d", MODULE_NAME, err, 0);
+
 	return 0;
 }
 
@@ -145,24 +145,24 @@ int err, devno = MKDEV(gpiochar.major, gpiochar.minor);
  * @brief  Device driver initialization
  *
  * */
-int gpio_drv_init(void)
+int t_drv_init(void)
 {
 int res = 0;
 dev_t dev;
 
-	res = alloc_chrdev_region(&dev, gpiochar.minor,
-							gpiochar.count, gpiochar.name);
-	
-	gpiochar.major = MAJOR(dev);
+	res = alloc_chrdev_region(&dev, tchardev.minor,
+							tchardev.count, tchardev.name);
+
+	tchardev.major = MAJOR(dev);
 
 	if (res < 0) {
-		printk(KERN_WARNING "Can't allocate gpio char dev\n");
+		printk(KERN_WARNING "Can't allocate %s\n", MODULE_NAME);
 		return res;
 	} else {
-		printk(KERN_WARNING "Allocated gpiochar_dev with major %d and minor %d",
-							gpiochar.major, gpiochar.minor);
+		printk(KERN_WARNING "Allocated %s - major=%d and minor=%d",
+               MODULE_NAME, tchardev.major, tchardev.minor);
 	}
-	cdev_setup(&(gpiochar.cdev));
+	cdev_setup(&(tchardev.cdev));
 
 	return 0;
 }
@@ -172,18 +172,18 @@ dev_t dev;
  * @brief Device driver cleanup.
  *
  * */
-void gpio_drv_exit(void)
+void t_drv_exit(void)
 {
-dev_t devno = MKDEV(gpiochar.major, gpiochar.minor);
+dev_t devno = MKDEV(tchardev.major, tchardev.minor);
 
-	if(gpiochar.priv.count > 0){
-		kfree(gpiochar.priv.buf);
+	if(tchardev.priv.count > 0){
+		kfree(tchardev.priv.buf);
 	}
-	cdev_del(&(gpiochar.cdev));
-	unregister_chrdev_region(devno, gpiochar.count);
-	
-	printk(KERN_INFO "gpiochar_dev correctly removed\n");
+	cdev_del(&(tchardev.cdev));
+	unregister_chrdev_region(devno, tchardev.count);
+
+	printk(KERN_INFO "%s correctly removed\n", MODULE_NAME);
 }
 
-module_init(gpio_drv_init);
-module_exit(gpio_drv_exit);
+module_init(t_drv_init);
+module_exit(t_drv_exit);
