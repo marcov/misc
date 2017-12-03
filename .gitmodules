@@ -1,0 +1,3 @@
+[submodule "linux/userspace/tmp275-tool/Makefiles"]
+	path = linux/userspace/tmp275-tool/Makefiles
+	url = git@github.com:marcov/Makefiles.git
