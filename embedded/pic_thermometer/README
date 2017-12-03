@@ -1,0 +1,7 @@
+This is a very old project I did using on a PIC16F876A.
+It is basically a thermometer displaying current the current temperature on a LCD.
+
+- The temperature sensor used is a DS1820 1-wire digital sensor IC.
+- The LCD is the very well known HD44780.
+
+There are other functionalities but I dont remember exactly :-) Probably a "breathing" effect led using PWM.
